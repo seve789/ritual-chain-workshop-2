@@ -1,8 +1,9 @@
 # Bootcamp 2 — Ritual Predict: workshop work log
 
 > Work log for this fork's submission (seve789/ritual-chain-workshop-2).
-> All local work is implemented and verified green (32 tests + local-node demo).
-> Remaining at last session end: README polish, commit, push to fork.
+> Status: **COMPLETE** — all local work implemented, verified green
+> (32 tests + local-node demo), and pushed to the fork via the GitHub Contents
+> API (github.com git protocol is blocked in this environment).
 
 ## What is this
 
