@@ -101,6 +101,53 @@ Intentionally not included: an AMM, an order book, an order-matching engine, gov
 ERC-20, a centralized resolver, or an upgrade proxy. Staking uses the chain's native asset and the
 betting model is plain pari-mutuel: two running totals and one mapping per side.
 
+## This fork's work (Bootcamp 2 submission)
+
+The starter repo left five core functions stubbed out (`createMarket`,
+`onScheduledResolve`, `_readOracle`, `_pickExecutor`, `_scheduleResolution`) and
+referenced mocks + end-to-end tests that were not included. This fork implements
+all of it and verifies it locally (the chain was down, so everything runs against
+mocks at the canonical Ritual addresses — zero network, zero funds):
+
+- **`hardhat/contracts/RitualPredict.sol`** — all five stubs implemented:
+  duration/string validation, block-number deadlines, `Scheduler.schedule()`
+  with 3 attempts 200 blocks apart, a revert-free idempotent scheduler callback
+  (failures count, only the comparison decides the outcome, remaining executions
+  are cancelled on a terminal state), the 13-field HTTP precompile (0x0801)
+  request, an external-`try` envelope decode, jq (0x0803) extraction, and a
+  re-seeded TEE executor pick per attempt.
+- **`hardhat/contracts/mocks/RitualMocks.sol`** — stand-ins for the Scheduler,
+  RitualWallet, TEEServiceRegistry, and the HTTP/jq precompiles, etched at the
+  canonical addresses in tests.
+- **`hardhat/contracts/RitualPredict.t.sol`** — 30 Solidity tests incl. two
+  fuzz suites (payouts preserve the pool; all four comparators settle
+  correctly), covering lifecycle, payouts, retries, invalidations, refunds,
+  idempotency, and funding.
+- **`hardhat/test/RitualPredict.e2e.ts`** — 2 end-to-end tests of the full
+  workshop flow: the Scheduler wakes the contract, the market resolves itself,
+  winners pull their share; and three failed oracle reads → `Invalid` → refunds.
+- **`hardhat/scripts/local-demo.ts`** — run the whole lifecycle against a local
+  `npx hardhat node` (offline demo): `npx hardhat node` in one terminal,
+  `npx hardhat run scripts/local-demo.ts` in another.
+
+Verification (2026-08-19): `npx hardhat test` → **32 passing**
+(30 solidity, 2 nodejs); `npx tsc --noEmit` clean; the local-node demo runs
+end-to-end (deploy → fund → create → bet → window closes → Scheduler fires →
+Resolved → payouts, contract ends at 0 balance).
+
+Fixes applied to the starter so it builds in this environment (network-blocked
+github.com): `forge-std` is fetched from a codeload tarball instead of the git
+protocol; `test/Counter.ts` was removed (it referenced a `Counter.sol` that does
+not exist in this repo); `tsconfig.json` gained `noEmit` +
+`allowImportingTsExtensions` (the upstream scripts import `.ts` extensions and
+never typechecked). The `localRitual` network deliberately has no `chainId`
+(hardhat node serves 31337) and impersonated accounts are funded for gas via
+`hardhat_setBalance`.
+
+See **WORKLOG.md** for the full debugging notes (including a solc 0.8.28
+miscompile of large `abi.decode` calls that forced assembly-based calldata
+parsing in the HTTP mock).
+
 ## Reference
 
 - Ritual Chain docs — <https://docs.ritualfoundation.org>
