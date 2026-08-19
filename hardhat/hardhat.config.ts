@@ -30,6 +30,14 @@ export default defineConfig({
       type: "edr-simulated",
       chainType: "l1",
     },
+    // Local Hardhat node for the offline demo (scripts/local-demo.ts).
+    // Start it with `npx hardhat node`, then run the demo script.
+    // No chainId on purpose: the node reports its own (31337 by default).
+    localRitual: {
+      type: "http",
+      chainType: "l1",
+      url: "http://127.0.0.1:8545",
+    },
     // Ritual Chain testnet. Requires EIP-1559 (type-2) transactions; viem sends
     // those by default.
     ritual: {
