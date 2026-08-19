@@ -60,6 +60,26 @@ local node demo             → full end-to-end on `hardhat node`:   ✅
      31337 → HHE708); impersonated accounts need `hardhat_setBalance` for gas
      ("Missing or invalid parameters" otherwise)
 
+## Ritual skill cross-check (2026-08-19)
+
+Post-submission audit against the `ritual-dapp-precompiles` skill reference. The
+implementation was written from `ritual-dapp-http` + `ritual-dapp-scheduler`
+(canonical addresses came from the repo's own `RitualChain.sol`); this pass
+re-verifies every encoding decision against the complete ABI reference:
+
+| Check | Skill reference | Our implementation | Result |
+|---|---|---|---|
+| HTTP 0x0801 request (13 fields) | base(0-4) + url(5) + method(6) + headerKeys(7) + headerValues(8) + body(9) + dkmsKeyIndex(10) + dkmsKeyFormat(11) + piiEnabled(12) | `abi.encode(executor, secrets, ttl, sigs, pubkey, url, GET=1, [], [], 0x, 0, 0, false)` | ✅ identical |
+| HTTP 0x0801 output | `(uint16, string[], string[], bytes, string)` | `decodeHttpResponse` decodes the same 5-tuple | ✅ |
+| JQ 0x0803 | `(query, inputData, outputType)` — 1 = uint256 | `_jqUint` uses `JQ_OUT_UINT256 = 1`, length<32 = failure | ✅ |
+| System contract addresses | Wallet `0x532F…`, Scheduler `0x56e7…`, Registry `0x9644…` | repo `RitualChain.sol` (same values) | ✅ |
+| Async envelope | `(bytes simmedInput, bytes actualOutput)` | `decodeHttpResponse` unwraps the pair | ✅ |
+| Scheduler `schedule()` | 10 params, executionIndex injected into calldata bytes 4-35 | `_scheduleResolution` encodes 0 placeholder; `frequency×numCalls` = 600 ≤ MAX_LIFESPAN 10,000 | ✅ |
+
+Also checked: HTTP method codes (GET=1), capability enum (HTTP_CALL=0), and the
+base executor field order — all match. No encoding errors found; end-to-end
+verification (32 tests + local-node demo) remains the behavioral proof.
+
 ## Pitfalls discovered (keep for README / future work)
 
 - solc 0.8.28 + optimizer runs=200 **miscompiles large dynamic abi.decode**:
