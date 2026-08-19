@@ -6,7 +6,7 @@
     "@nomicfoundation/hardhat-ignition": "^3.1.8",
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.7",
     "@types/node": "^22.20.1",
-    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "forge-std": "https://codeload.github.com/foundry-rs/forge-std/tar.gz/refs/tags/v1.9.4",
     "hardhat": "^3.13.0",
     "typescript": "~6.0.3",
     "viem": "^2.55.16"
