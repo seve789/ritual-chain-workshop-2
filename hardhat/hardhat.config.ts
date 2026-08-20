@@ -1,3 +1,4 @@
+import "dotenv/config";
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 import { configVariable, defineConfig } from "hardhat/config";
 
@@ -45,7 +46,9 @@ export default defineConfig({
       chainType: "l1",
       chainId: 1979,
       url: "https://rpc.ritualfoundation.org",
-      accounts: [configVariable("DEPLOYER_PRIVATE_KEY")],
+      // Upstream used DEPLOYER_PRIVATE_KEY here but .env.example and
+      // scripts/ritual.ts both document RITUAL_PRIVATE_KEY — aligned to match.
+      accounts: [configVariable("RITUAL_PRIVATE_KEY")],
     },
   },
 });
